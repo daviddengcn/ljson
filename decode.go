@@ -5,7 +5,7 @@
 // Represents JSON data structure using native Go types: booleans, floats,
 // strings, arrays, and maps.
 
-package json
+package ljson
 
 import (
 	"encoding/base64"
@@ -565,10 +565,14 @@ func (d *decodeState) object(v reflect.Value) {
 		if op == scanEndObject {
 			break
 		}
-		if op != scanObjectValue {
+
+		if op == scanBeginLiteral {
+			d.off--
+			d.scan.undo(op)
+		} else if op != scanObjectValue {
 			d.error(errPhase)
 		}
-	}
+	} // for
 }
 
 // literal consumes a literal from d.data[d.off-1:], decoding into the value v.

@@ -1,4 +1,4 @@
-jsonplus
+ljson
 ========
 
-JSON-Plus is a superset of JSON
+Loose JSON is a superset of JSON which allows some imperfect format.

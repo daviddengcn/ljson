@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package json
+package ljson
 
 // JSON value parser state machine.
 // Just about at the limit of what is reasonable to write by hand.
@@ -190,6 +190,9 @@ func stateBeginValueOrEmpty(s *scanner, c int) int {
 	if c <= ' ' && isSpace(rune(c)) {
 		return scanSkipSpace
 	}
+	if c == ',' {
+		return scanSkipSpace
+	}
 	if c == ']' {
 		return stateEndValue(s, c)
 	}
@@ -254,6 +257,9 @@ func stateBeginString(s *scanner, c int) int {
 	if c <= ' ' && isSpace(rune(c)) {
 		return scanSkipSpace
 	}
+	if c == ',' {
+		return scanSkipSpace
+	}
 	if c == '"' {
 		s.step = stateInString
 		return scanBeginLiteral
@@ -287,17 +293,22 @@ func stateEndValue(s *scanner, c int) int {
 	case parseObjectValue:
 		if c == ',' {
 			s.parseState[n-1] = parseObjectKey
-			s.step = stateBeginString
+			s.step = stateBeginStringOrEmpty
 			return scanObjectValue
 		}
 		if c == '}' {
 			s.popParseState()
 			return scanEndObject
 		}
+		if c == '"' {
+			s.parseState[n-1] = parseObjectKey
+			s.step = stateInString
+			return scanBeginLiteral
+		}
 		return s.error(c, "after object key:value pair")
 	case parseArrayValue:
 		if c == ',' {
-			s.step = stateBeginValue
+			s.step = stateBeginValueOrEmpty
 			return scanArrayValue
 		}
 		if c == ']' {

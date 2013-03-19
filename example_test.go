@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package json_test
+package ljson_test
 
 import (
-	"encoding/json"
+	ljson "github.com/daviddengcn/jsonplus"
 	"fmt"
 	"io"
 	"log"
@@ -24,7 +24,7 @@ func ExampleMarshal() {
 		Name:   "Reds",
 		Colors: []string{"Crimson", "Red", "Ruby", "Maroon"},
 	}
-	b, err := json.Marshal(group)
+	b, err := ljson.Marshal(group)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -43,7 +43,7 @@ func ExampleUnmarshal() {
 		Order string
 	}
 	var animals []Animal
-	err := json.Unmarshal(jsonBlob, &animals)
+	err := ljson.Unmarshal(jsonBlob, &animals)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -64,7 +64,7 @@ func ExampleDecoder() {
 	type Message struct {
 		Name, Text string
 	}
-	dec := json.NewDecoder(strings.NewReader(jsonStream))
+	dec := ljson.NewDecoder(strings.NewReader(jsonStream))
 	for {
 		var m Message
 		if err := dec.Decode(&m); err == io.EOF {
