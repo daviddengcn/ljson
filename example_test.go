@@ -5,7 +5,7 @@
 package ljson_test
 
 import (
-	ljson "github.com/daviddengcn/jsonplus"
+	"github.com/daviddengcn/ljson"
 	"fmt"
 	"io"
 	"log"
