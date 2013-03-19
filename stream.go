@@ -5,7 +5,6 @@
 package ljson
 
 import (
-	"errors"
 	"io"
 )
 
@@ -124,65 +123,3 @@ func nonSpace(b []byte) bool {
 	}
 	return false
 }
-
-// An Encoder writes JSON objects to an output stream.
-type Encoder struct {
-	w   io.Writer
-	e   encodeState
-	err error
-}
-
-// NewEncoder returns a new encoder that writes to w.
-func NewEncoder(w io.Writer) *Encoder {
-	return &Encoder{w: w}
-}
-
-// Encode writes the JSON encoding of v to the connection.
-//
-// See the documentation for Marshal for details about the
-// conversion of Go values to JSON.
-func (enc *Encoder) Encode(v interface{}) error {
-	if enc.err != nil {
-		return enc.err
-	}
-	enc.e.Reset()
-	err := enc.e.marshal(v)
-	if err != nil {
-		return err
-	}
-
-	// Terminate each value with a newline.
-	// This makes the output look a little nicer
-	// when debugging, and some kind of space
-	// is required if the encoded value was a number,
-	// so that the reader knows there aren't more
-	// digits coming.
-	enc.e.WriteByte('\n')
-
-	if _, err = enc.w.Write(enc.e.Bytes()); err != nil {
-		enc.err = err
-	}
-	return err
-}
-
-// RawMessage is a raw encoded JSON object.
-// It implements Marshaler and Unmarshaler and can
-// be used to delay JSON decoding or precompute a JSON encoding.
-type RawMessage []byte
-
-// MarshalJSON returns *m as the JSON encoding of m.
-func (m *RawMessage) MarshalJSON() ([]byte, error) {
-	return *m, nil
-}
-
-// UnmarshalJSON sets *m to a copy of data.
-func (m *RawMessage) UnmarshalJSON(data []byte) error {
-	if m == nil {
-		return errors.New("json.RawMessage: UnmarshalJSON on nil pointer")
-	}
-	*m = append((*m)[0:0], data...)
-	return nil
-}
-
-var _ Marshaler = (*RawMessage)(nil)
-var _ Unmarshaler = (*RawMessage)(nil)

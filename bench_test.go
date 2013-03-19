@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"encoding/json"
 )
 
 type codeResponse struct {
@@ -57,7 +58,7 @@ func codeInit() {
 		panic("unmarshal code.json: " + err.Error())
 	}
 
-	if data, err = Marshal(&codeStruct); err != nil {
+	if data, err = json.Marshal(&codeStruct); err != nil {
 		panic("marshal code.json: " + err.Error())
 	}
 
@@ -73,35 +74,6 @@ func codeInit() {
 		}
 		panic("re-marshal code.json: different result")
 	}
-}
-
-func BenchmarkCodeEncoder(b *testing.B) {
-	if codeJSON == nil {
-		b.StopTimer()
-		codeInit()
-		b.StartTimer()
-	}
-	enc := NewEncoder(ioutil.Discard)
-	for i := 0; i < b.N; i++ {
-		if err := enc.Encode(&codeStruct); err != nil {
-			b.Fatal("Encode:", err)
-		}
-	}
-	b.SetBytes(int64(len(codeJSON)))
-}
-
-func BenchmarkCodeMarshal(b *testing.B) {
-	if codeJSON == nil {
-		b.StopTimer()
-		codeInit()
-		b.StartTimer()
-	}
-	for i := 0; i < b.N; i++ {
-		if _, err := Marshal(&codeStruct); err != nil {
-			b.Fatal("Marshal:", err)
-		}
-	}
-	b.SetBytes(int64(len(codeJSON)))
 }
 
 func BenchmarkCodeDecoder(b *testing.B) {

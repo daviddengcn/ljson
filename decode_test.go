@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"encoding/json"
 )
 
 type T struct {
@@ -104,7 +105,7 @@ var unmarshalTests = []unmarshalTest{
 }
 
 func TestMarshal(t *testing.T) {
-	b, err := Marshal(allValue)
+	b, err := json.Marshal(allValue)
 	if err != nil {
 		t.Fatalf("Marshal allValue: %v", err)
 	}
@@ -114,7 +115,7 @@ func TestMarshal(t *testing.T) {
 		return
 	}
 
-	b, err = Marshal(pallValue)
+	b, err = json.Marshal(pallValue)
 	if err != nil {
 		t.Fatalf("Marshal pallValue: %v", err)
 	}
@@ -122,20 +123,6 @@ func TestMarshal(t *testing.T) {
 		t.Errorf("Marshal pallValueCompact")
 		diff(t, b, []byte(pallValueCompact))
 		return
-	}
-}
-
-func TestMarshalBadUTF8(t *testing.T) {
-	s := "hello\xffworld"
-	b, err := Marshal(s)
-	if err == nil {
-		t.Fatal("Marshal bad UTF8: no error")
-	}
-	if len(b) != 0 {
-		t.Fatal("Marshal returned data")
-	}
-	if _, ok := err.(*InvalidUTF8Error); !ok {
-		t.Fatalf("Marshal did not return InvalidUTF8Error: %T %v", err, err)
 	}
 }
 
@@ -160,9 +147,9 @@ func TestUnmarshal(t *testing.T) {
 		}
 		if !reflect.DeepEqual(v.Elem().Interface(), tt.out) {
 			t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, v.Elem().Interface(), tt.out)
-			data, _ := Marshal(v.Elem().Interface())
+			data, _ := json.Marshal(v.Elem().Interface())
 			println(string(data))
-			data, _ = Marshal(tt.out)
+			data, _ = json.Marshal(tt.out)
 			println(string(data))
 			continue
 		}
@@ -175,7 +162,7 @@ func TestUnmarshalMarshal(t *testing.T) {
 	if err := Unmarshal(jsonBig, &v); err != nil {
 		t.Fatalf("Unmarshal: %v", err)
 	}
-	b, err := Marshal(v)
+	b, err := json.Marshal(v)
 	if err != nil {
 		t.Fatalf("Marshal: %v", err)
 	}
@@ -191,7 +178,7 @@ func TestLargeByteSlice(t *testing.T) {
 	for i := range s0 {
 		s0[i] = byte(i)
 	}
-	b, err := Marshal(s0)
+	b, err := json.Marshal(s0)
 	if err != nil {
 		t.Fatalf("Marshal: %v", err)
 	}
@@ -234,7 +221,7 @@ func TestUnmarshalPtrPtr(t *testing.T) {
 func TestEscape(t *testing.T) {
 	const input = `"foobar"<html>`
 	const expected = `"\"foobar\"\u003chtml\u003e"`
-	b, err := Marshal(input)
+	b, err := json.Marshal(input)
 	if err != nil {
 		t.Fatalf("Marshal error: %v", err)
 	}
@@ -622,7 +609,7 @@ func TestAnonymous(t *testing.T) {
 		N int
 	}
 
-	data, err := Marshal(new(S))
+	data, err := json.Marshal(new(S))
 	if err != nil {
 		t.Fatalf("Marshal: %v", err)
 	}

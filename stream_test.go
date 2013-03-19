@@ -33,23 +33,6 @@ false
 3.14
 `
 
-func TestEncoder(t *testing.T) {
-	for i := 0; i <= len(streamTest); i++ {
-		var buf bytes.Buffer
-		enc := NewEncoder(&buf)
-		for j, v := range streamTest[0:i] {
-			if err := enc.Encode(v); err != nil {
-				t.Fatalf("encode #%d: %v", j, err)
-			}
-		}
-		if have, want := buf.String(), nlines(streamEncoded, i); have != want {
-			t.Errorf("encoding %d items: mismatch", i)
-			diff(t, []byte(have), []byte(want))
-			break
-		}
-	}
-}
-
 func TestDecoder(t *testing.T) {
 	for i := 0; i <= len(streamTest); i++ {
 		// Use stream without newlines as input,
@@ -94,54 +77,4 @@ func nlines(s string, n int) string {
 		}
 	}
 	return s
-}
-
-func TestRawMessage(t *testing.T) {
-	// TODO(rsc): Should not need the * in *RawMessage
-	var data struct {
-		X  float64
-		Id *RawMessage
-		Y  float32
-	}
-	const raw = `["\u0056",null]`
-	const msg = `{"X":0.1,"Id":["\u0056",null],"Y":0.2}`
-	err := Unmarshal([]byte(msg), &data)
-	if err != nil {
-		t.Fatalf("Unmarshal: %v", err)
-	}
-	if string([]byte(*data.Id)) != raw {
-		t.Fatalf("Raw mismatch: have %#q want %#q", []byte(*data.Id), raw)
-	}
-	b, err := Marshal(&data)
-	if err != nil {
-		t.Fatalf("Marshal: %v", err)
-	}
-	if string(b) != msg {
-		t.Fatalf("Marshal: have %#q want %#q", b, msg)
-	}
-}
-
-func TestNullRawMessage(t *testing.T) {
-	// TODO(rsc): Should not need the * in *RawMessage
-	var data struct {
-		X  float64
-		Id *RawMessage
-		Y  float32
-	}
-	data.Id = new(RawMessage)
-	const msg = `{"X":0.1,"Id":null,"Y":0.2}`
-	err := Unmarshal([]byte(msg), &data)
-	if err != nil {
-		t.Fatalf("Unmarshal: %v", err)
-	}
-	if data.Id != nil {
-		t.Fatalf("Raw mismatch: have non-nil, want nil")
-	}
-	b, err := Marshal(&data)
-	if err != nil {
-		t.Fatalf("Marshal: %v", err)
-	}
-	if string(b) != msg {
-		t.Fatalf("Marshal: have %#q want %#q", b, msg)
-	}
 }

@@ -6,6 +6,7 @@ package ljson
 
 import (
 	"testing"
+	"encoding/json"
 )
 
 type basicLatin2xTag struct {
@@ -82,7 +83,7 @@ var structTagObjectKeyTests = []struct {
 
 func TestStructTagObjectKey(t *testing.T) {
 	for _, tt := range structTagObjectKeyTests {
-		b, err := Marshal(tt.raw)
+		b, err := json.Marshal(tt.raw)
 		if err != nil {
 			t.Fatalf("Marshal(%#q) failed: %v", tt.raw, err)
 		}
