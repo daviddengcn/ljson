@@ -18,6 +18,7 @@ import (
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
+	"encoding/json"
 )
 
 // Unmarshal parses the JSON-encoded data and stores the result
@@ -74,46 +75,6 @@ type Unmarshaler interface {
 	UnmarshalJSON([]byte) error
 }
 
-// An UnmarshalTypeError describes a JSON value that was
-// not appropriate for a value of a specific Go type.
-type UnmarshalTypeError struct {
-	Value string       // description of JSON value - "bool", "array", "number -5"
-	Type  reflect.Type // type of Go value it could not be assigned to
-}
-
-func (e *UnmarshalTypeError) Error() string {
-	return "json: cannot unmarshal " + e.Value + " into Go value of type " + e.Type.String()
-}
-
-// An UnmarshalFieldError describes a JSON object key that
-// led to an unexported (and therefore unwritable) struct field.
-type UnmarshalFieldError struct {
-	Key   string
-	Type  reflect.Type
-	Field reflect.StructField
-}
-
-func (e *UnmarshalFieldError) Error() string {
-	return "json: cannot unmarshal object key " + strconv.Quote(e.Key) + " into unexported field " + e.Field.Name + " of type " + e.Type.String()
-}
-
-// An InvalidUnmarshalError describes an invalid argument passed to Unmarshal.
-// (The argument to Unmarshal must be a non-nil pointer.)
-type InvalidUnmarshalError struct {
-	Type reflect.Type
-}
-
-func (e *InvalidUnmarshalError) Error() string {
-	if e.Type == nil {
-		return "json: Unmarshal(nil)"
-	}
-
-	if e.Type.Kind() != reflect.Ptr {
-		return "json: Unmarshal(non-pointer " + e.Type.String() + ")"
-	}
-	return "json: Unmarshal(nil " + e.Type.String() + ")"
-}
-
 func (d *decodeState) unmarshal(v interface{}) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -127,7 +88,7 @@ func (d *decodeState) unmarshal(v interface{}) (err error) {
 	rv := reflect.ValueOf(v)
 	pv := rv
 	if pv.Kind() != reflect.Ptr || pv.IsNil() {
-		return &InvalidUnmarshalError{reflect.TypeOf(v)}
+		return &json.InvalidUnmarshalError{reflect.TypeOf(v)}
 	}
 
 	d.scan.reset()
@@ -328,7 +289,7 @@ func (d *decodeState) array(v reflect.Value) {
 	// Check type of target.
 	switch v.Kind() {
 	default:
-		d.saveError(&UnmarshalTypeError{"array", v.Type()})
+		d.saveError(&json.UnmarshalTypeError{"array", v.Type()})
 		d.off--
 		d.next()
 		return
@@ -437,7 +398,7 @@ func (d *decodeState) object(v reflect.Value) {
 		// map must have string type
 		t := v.Type()
 		if t.Key() != reflect.TypeOf("") {
-			d.saveError(&UnmarshalTypeError{"object", v.Type()})
+			d.saveError(&json.UnmarshalTypeError{"object", v.Type()})
 			break
 		}
 		mv = v
@@ -447,7 +408,7 @@ func (d *decodeState) object(v reflect.Value) {
 	case reflect.Struct:
 		sv = v
 	default:
-		d.saveError(&UnmarshalTypeError{"object", v.Type()})
+		d.saveError(&json.UnmarshalTypeError{"object", v.Type()})
 	}
 
 	if !mv.IsValid() && !sv.IsValid() {
@@ -530,7 +491,7 @@ func (d *decodeState) object(v reflect.Value) {
 			// Extract value; name must be exported.
 			if ok {
 				if f.PkgPath != "" {
-					d.saveError(&UnmarshalFieldError{key, st, f})
+					d.saveError(&json.UnmarshalFieldError{key, st, f})
 				} else {
 					subv = sv.FieldByIndex(f.Index)
 				}
@@ -617,7 +578,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 	case 'n': // null
 		switch v.Kind() {
 		default:
-			d.saveError(&UnmarshalTypeError{"null", v.Type()})
+			d.saveError(&json.UnmarshalTypeError{"null", v.Type()})
 		case reflect.Interface, reflect.Ptr, reflect.Map, reflect.Slice:
 			v.Set(reflect.Zero(v.Type()))
 		}
@@ -629,7 +590,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 			if fromQuoted {
 				d.saveError(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 			} else {
-				d.saveError(&UnmarshalTypeError{"bool", v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"bool", v.Type()})
 			}
 		case reflect.Bool:
 			v.SetBool(value)
@@ -648,10 +609,10 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 		}
 		switch v.Kind() {
 		default:
-			d.saveError(&UnmarshalTypeError{"string", v.Type()})
+			d.saveError(&json.UnmarshalTypeError{"string", v.Type()})
 		case reflect.Slice:
 			if v.Type() != byteSliceType {
-				d.saveError(&UnmarshalTypeError{"string", v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"string", v.Type()})
 				break
 			}
 			b := make([]byte, base64.StdEncoding.DecodedLen(len(s)))
@@ -681,12 +642,12 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 			if fromQuoted {
 				d.error(fmt.Errorf("json: invalid use of ,string struct tag, trying to unmarshal %q into %v", item, v.Type()))
 			} else {
-				d.error(&UnmarshalTypeError{"number", v.Type()})
+				d.error(&json.UnmarshalTypeError{"number", v.Type()})
 			}
 		case reflect.Interface:
 			n, err := strconv.ParseFloat(s, 64)
 			if err != nil {
-				d.saveError(&UnmarshalTypeError{"number " + s, v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"number " + s, v.Type()})
 				break
 			}
 			v.Set(reflect.ValueOf(n))
@@ -694,7 +655,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			n, err := strconv.ParseInt(s, 10, 64)
 			if err != nil || v.OverflowInt(n) {
-				d.saveError(&UnmarshalTypeError{"number " + s, v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"number " + s, v.Type()})
 				break
 			}
 			v.SetInt(n)
@@ -702,7 +663,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 			n, err := strconv.ParseUint(s, 10, 64)
 			if err != nil || v.OverflowUint(n) {
-				d.saveError(&UnmarshalTypeError{"number " + s, v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"number " + s, v.Type()})
 				break
 			}
 			v.SetUint(n)
@@ -710,7 +671,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 		case reflect.Float32, reflect.Float64:
 			n, err := strconv.ParseFloat(s, v.Type().Bits())
 			if err != nil || v.OverflowFloat(n) {
-				d.saveError(&UnmarshalTypeError{"number " + s, v.Type()})
+				d.saveError(&json.UnmarshalTypeError{"number " + s, v.Type()})
 				break
 			}
 			v.SetFloat(n)
@@ -842,7 +803,7 @@ func (d *decodeState) literalInterface() interface{} {
 		}
 		n, err := strconv.ParseFloat(string(item), 64)
 		if err != nil {
-			d.saveError(&UnmarshalTypeError{"number " + string(item), reflect.TypeOf(0.0)})
+			d.saveError(&json.UnmarshalTypeError{"number " + string(item), reflect.TypeOf(0.0)})
 		}
 		return n
 	}

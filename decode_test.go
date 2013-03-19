@@ -67,12 +67,12 @@ var unmarshalTests = []unmarshalTest{
 	{`"g-clef: \uD834\uDD1E"`, new(string), "g-clef: \U0001D11E", nil},
 	{`"invalid: \uD834x\uDD1E"`, new(string), "invalid: \uFFFDx\uFFFD", nil},
 	{"null", new(interface{}), nil, nil},
-	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"X": [1,2,3] "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"X": [1,2,3], "Y": 4,}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"X": [1,2,3],, , "Y": 4,}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"X": [1,2,,,3,], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"x": 1}`, new(tx), tx{}, &UnmarshalFieldError{"x", txType, txType.Field(0)}},
+	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"X": [1,2,3] "Y": 4}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"X": [1,2,3], "Y": 4,}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"X": [1,2,3],, , "Y": 4,}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"X": [1,2,,,3,], "Y": 4}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"x": 1}`, new(tx), tx{}, &json.UnmarshalFieldError{"x", txType, txType.Field(0)}},
 
 	// Z has a "-" tag.
 	{`{"Y": 1, "Z": 2}`, new(T), T{Y: 1}, nil},
