@@ -66,15 +66,6 @@ func Unmarshal(data []byte, v interface{}) error {
 	return d.unmarshal(v)
 }
 
-// Unmarshaler is the interface implemented by objects
-// that can unmarshal a JSON description of themselves.
-// The input can be assumed to be a valid JSON object
-// encoding.  UnmarshalJSON must copy the JSON data
-// if it wishes to retain the data after returning.
-type Unmarshaler interface {
-	UnmarshalJSON([]byte) error
-}
-
 func (d *decodeState) unmarshal(v interface{}) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -218,7 +209,7 @@ func (d *decodeState) value(v reflect.Value) {
 // until it gets to a non-pointer.
 // if it encounters an Unmarshaler, indirect stops and returns that.
 // if decodingNull is true, indirect stops at the last pointer so it can be set to nil.
-func (d *decodeState) indirect(v reflect.Value, decodingNull bool) (Unmarshaler, reflect.Value) {
+func (d *decodeState) indirect(v reflect.Value, decodingNull bool) (json.Unmarshaler, reflect.Value) {
 	// If v is a named type and is addressable,
 	// start with its address, so that if the type has pointer methods,
 	// we find them.
@@ -231,7 +222,7 @@ func (d *decodeState) indirect(v reflect.Value, decodingNull bool) (Unmarshaler,
 			// Remember that this is an unmarshaler,
 			// but wait to return it until after allocating
 			// the pointer (if necessary).
-			_, isUnmarshaler = v.Interface().(Unmarshaler)
+			_, isUnmarshaler = v.Interface().(json.Unmarshaler)
 		}
 
 		// Load value from interface, but only if the result will be
@@ -264,7 +255,7 @@ func (d *decodeState) indirect(v reflect.Value, decodingNull bool) (Unmarshaler,
 			// This is an unfortunate consequence of reflect.
 			// An alternative would be to look up the
 			// UnmarshalJSON method and return a FuncValue.
-			return v.Interface().(Unmarshaler), reflect.Value{}
+			return v.Interface().(json.Unmarshaler), reflect.Value{}
 		}
 		v = pv.Elem()
 	}
