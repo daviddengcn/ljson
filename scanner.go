@@ -191,7 +191,7 @@ func isNakedKey(r rune) bool {
 		return false
 	}
 	
-	return r != '"' && r != '\'' && r != ':' && r != '{' && r != '[' && r != '}' && r != ']' && r != ','
+	return r != '"' && r != '\'' && r != ':' && r != '{' && r != '[' && r != '}' && r != ']' && r != ',' && r != '\\'
 }
 
 // stateBeginValueOrEmpty is the state after reading `[`.
