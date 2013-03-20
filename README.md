@@ -41,7 +41,7 @@ Format differences to standard JSON:
 3) Support naked-key. If the key part of an element in an object, which is a string, 
 contains naked-key-valid characters only, the embracing double quotes can be omitted(the key becomes a naked-key).
 naked-key-valid characters are printable characters other than the following characters:
-", ', :, {, [, ], {, }, \, and the comma.
+", ', :, [, ], {, }, \, and the comma.
 
 ```javascript
 {
