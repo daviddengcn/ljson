@@ -315,7 +315,9 @@ func stateEndValue(s *scanner, c int) int {
 			s.popParseState()
 			return scanEndArray
 		}
-		return s.error(c, "after array element")
+
+		return stateBeginValueOrEmpty(s, c)
+		//return s.error(c, "after array element")
 	}
 	return s.error(c, "")
 }

@@ -6,11 +6,11 @@ package ljson
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
-	"encoding/json"
 )
 
 type T struct {
@@ -72,6 +72,7 @@ var unmarshalTests = []unmarshalTest{
 	{`{"X": [1,2,3], "Y": 4,}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
 	{`{"X": [1,2,3],, , "Y": 4,}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
 	{`{"X": [1,2,,,3,], "Y": 4}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{`{"X": [1, 2, 3], "Y": 4}`, new(T), T{Y: 4}, &json.UnmarshalTypeError{"array", reflect.TypeOf("")}},
 	{`{"x": 1}`, new(tx), tx{}, &json.UnmarshalFieldError{"x", txType, txType.Field(0)}},
 
 	// Z has a "-" tag.
@@ -79,7 +80,8 @@ var unmarshalTests = []unmarshalTest{
 
 	// syntax errors
 	{`{"X": "foo", "Y"}`, nil, nil, &SyntaxError{"invalid character '}' after object key", 17}},
-	{`[1, 2, 3+]`, nil, nil, &SyntaxError{"invalid character '+' after array element", 9}},
+	//{`[1, 2, 3+]`, nil, nil, &SyntaxError{"invalid character '+' after array element", 9}},
+	{`[1, 2, 3+]`, nil, nil, &SyntaxError{"invalid character '+' looking for beginning of value", 9}},
 
 	// array tests
 	{`[1, 2, 3]`, new([3]int), [3]int{1, 2, 3}, nil},
@@ -691,6 +693,46 @@ func TestInterfaceSet(t *testing.T) {
 		}
 		if !reflect.DeepEqual(b.X, tt.post) {
 			t.Errorf("Unmarshal %#q into %#v: X=%#v, want %#v", blob, tt.pre, b.X, tt.post)
+		}
+	}
+}
+
+func TestCheckUnmarshal(t *testing.T) {
+	cases := []struct {
+		json string
+		val  interface{}
+	}{
+		{"1", 1},
+		{`[1, 2, 3]`, []int{1, 2, 3}},
+		{`[1, 2, 3,,]`, []int{1, 2, 3}},
+		{`[1, 2,,, 3]`, []int{1, 2, 3}},
+		{`{"D": "david"}`, map[string]string{"D":"david"}},
+		{`{,"D": "david",}`, map[string]string{"D":"david"}},
+		{`{"A":"apple","D": "David",}`, map[string]string{"A":"apple", "D":"David"}},
+		{`{"A":"apple" "D": "David"}`, map[string]string{"A":"apple", "D":"David"}},
+		{`{"A":"apple" "M": {"D": "David"}}`, map[string]interface{}{
+			"A": "apple",
+			"M": map[string]interface{}{"D": "David"}}},
+		{`{"A":"apple" "M": {"D": "David" "C": "Cat"}}`, map[string]interface{}{
+			"A": "apple",
+			"M": map[string]interface{}{"D": "David", "C": "Cat"}}},
+		{`{"D": [1 2 3 4]}`, map[string][]float64{
+			"D": []float64{1., 2., 3., 4.}}},
+		{`{"D": [1 2 3 {"A": "apple"}]}`, map[string]interface{}{
+			"D": []interface{}{1., 2., 3., map[string]interface{}{"A": "apple"}}}},
+	}
+
+	for i, c := range cases {
+		v := reflect.New(reflect.TypeOf(c.val))
+		if err := Unmarshal([]byte(c.json), v.Interface()); err != nil {
+			t.Errorf("CheckUnmarshal(%d) %s: %v", i, c.json, err)
+			continue
+		}
+		
+		s := v.Elem().Interface()
+		if !reflect.DeepEqual(s, c.val) {
+			t.Errorf("CheckUnmarshal(%d) %s: expected %v(%v), but got %v(%v)",
+				i, c.json, c.val, reflect.TypeOf(c.val), s, reflect.TypeOf(s))
 		}
 	}
 }

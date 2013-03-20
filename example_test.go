@@ -5,8 +5,8 @@
 package ljson_test
 
 import (
-	"github.com/daviddengcn/ljson"
 	"fmt"
+	"github.com/daviddengcn/ljson"
 	"io"
 	"log"
 	"strings"
@@ -14,10 +14,14 @@ import (
 
 func ExampleUnmarshal() {
 	var jsonBlob = []byte(`[
-		{"Name" : "Platypus"
-		 "Order": "Monotremata"},
-		{"Name" : "Quoll"
-		 "Order": "Dasyuromorphia"}
+		{
+			"Name" : "Platypus"
+		 	"Order": "Monotremata"
+		}
+		{
+			"Name" : "Quoll"
+		 	"Order": "Dasyuromorphia"
+		}
 	]`)
 	type Animal struct {
 		Name  string

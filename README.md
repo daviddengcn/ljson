@@ -15,12 +15,12 @@ Format differences to standard JSON:
 }
 ```
 
-2) Commas can be omitted in definition of object. e.g.
+2) Commas can be omitted in definition of object and array. e.g.
 
 ```javascript
 {
     "color": "red"
-    "elems": [1,2,3,4]
+    "elems": [1 2 3 4]
     "weight": 10
 }
 ```

@@ -5,10 +5,10 @@
 package ljson
 
 import (
+	"encoding/json"
 	"math"
 	"math/rand"
 	"testing"
-	"encoding/json"
 )
 
 var ex1 = `[true,false,null,"x",1,1.5,0,-5e+2]`

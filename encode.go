@@ -67,5 +67,5 @@ func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
 func (sv stringValues) get(i int) string   { return sv[i].String() }
 
 var (
-	typeCacheLock     sync.RWMutex
+	typeCacheLock sync.RWMutex
 )

@@ -5,8 +5,8 @@
 package ljson
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 )
 
 type basicLatin2xTag struct {

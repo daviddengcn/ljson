@@ -9,6 +9,7 @@ package ljson
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -18,7 +19,6 @@ import (
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
-	"encoding/json"
 )
 
 // Unmarshal parses the JSON-encoded data and stores the result
@@ -113,6 +113,7 @@ func (d *decodeState) init(data []byte) *decodeState {
 
 // error aborts the decoding by panicking with err.
 func (d *decodeState) error(err error) {
+//buf := make([]byte, 1024); fmt.Println("error:", string(buf[:runtime.Stack(buf, false)]))
 	panic(err)
 }
 
@@ -337,7 +338,9 @@ func (d *decodeState) array(v reflect.Value) {
 			break
 		}
 		if op != scanArrayValue {
-			d.error(errPhase)
+			//d.error(errPhase)
+			d.off--
+			d.scan.undo(op)
 		}
 	}
 
@@ -512,13 +515,14 @@ func (d *decodeState) object(v reflect.Value) {
 			mv.SetMapIndex(reflect.ValueOf(key), subv)
 		}
 
-		// Next token must be , or }.
+		// Next token must be , }, or next key.
 		op = d.scanWhile(scanSkipSpace)
 		if op == scanEndObject {
 			break
 		}
 
 		if op == scanBeginLiteral {
+			// pushback the "
 			d.off--
 			d.scan.undo(op)
 		} else if op != scanObjectValue {
@@ -711,7 +715,9 @@ func (d *decodeState) arrayInterface() []interface{} {
 			break
 		}
 		if op != scanArrayValue {
-			d.error(errPhase)
+			d.off--
+			d.scan.undo(op)
+			//d.error(errPhase)
 		}
 	}
 	return v
@@ -756,7 +762,12 @@ func (d *decodeState) objectInterface() map[string]interface{} {
 		if op == scanEndObject {
 			break
 		}
-		if op != scanObjectValue {
+
+		if op == scanBeginLiteral {
+			// pushback the "
+			d.off--
+			d.scan.undo(op)
+		} else if op != scanObjectValue {
 			d.error(errPhase)
 		}
 	}

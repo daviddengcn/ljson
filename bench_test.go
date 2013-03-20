@@ -13,10 +13,10 @@ package ljson
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"testing"
-	"encoding/json"
 )
 
 type codeResponse struct {
