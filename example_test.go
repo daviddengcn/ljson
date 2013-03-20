@@ -15,12 +15,12 @@ import (
 func ExampleUnmarshal() {
 	var jsonBlob = []byte(`[
 		{
-			"Name" : "Platypus"
-		 	"Order": "Monotremata"
+			Name : "Platypus"
+		 	Order: "Monotremata"
 		}
 		{
-			"Name" : "Quoll"
-		 	"Order": "Dasyuromorphia"
+			Name : "Quoll"
+		 	Order: "Dasyuromorphia"
 		}
 	]`)
 	type Animal struct {
@@ -40,11 +40,11 @@ func ExampleUnmarshal() {
 // This example uses a Decoder to decode a stream of distinct JSON values.
 func ExampleDecoder() {
 	const jsonStream = `
-		{"Name": "Ed", "Text": "Knock knock.",}
-		{"Name": "Sam", "Text": "Who's there?",}
-		{"Name": "Ed", "Text": "Go fmt.",}
-		{"Name": "Sam", "Text": "Go fmt who?",}
-		{"Name": "Ed", "Text": "Go fmt yourself!",}
+		{Name: "Ed"  Text: "Knock knock."}
+		{Name: "Sam" Text: "Who's there?"}
+		{Name: "Ed"  Text: "Go fmt."}
+		{Name: "Sam" Text: "Go fmt who?"}
+		{Name: "Ed"  Text: "Go fmt yourself!"}
 	`
 	type Message struct {
 		Name, Text string

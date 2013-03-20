@@ -40,8 +40,12 @@ Format differences to standard JSON:
 
 This is useful especially when the data is written by hand, e.g. as a configure file.
 
-Decoder
--------
-This package implements decoder for LJSON. (For encoding, use build-in `encodeing/json` package.
+Implemenation
+-------------
+This package implements decoder for LJSON. (For encoding, use build-in `encoding/json` package. Visit [Godoc for LJSON](http://godoc.org/github.com/daviddengcn/ljson) for more usage information.
 
-[Godoc for LJSON](http://godoc.org/github.com/daviddengcn/ljson)
+The code is modified from `encoding/json` package in [go 1.0.3](https://code.google.com/p/go/source/browse/?name=go1.0.3#hg%2Fsrc%2Fpkg%2Fencoding%2Fjson).
+
+LICENSE
+-------
+This library is distributed under BSD license.

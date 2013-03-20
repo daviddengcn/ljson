@@ -708,9 +708,15 @@ func TestCheckUnmarshal(t *testing.T) {
 		{`[1, 2,,, 3]`, []int{1, 2, 3}},
 		{`{"D": "david"}`, map[string]string{"D":"david"}},
 		{`{,"D": "david",}`, map[string]string{"D":"david"}},
+		{`{D: "david"}`, map[string]string{"D":"david"}},
 		{`{"A":"apple","D": "David",}`, map[string]string{"A":"apple", "D":"David"}},
+		{`{A:"apple", D: "David",}`, map[string]string{"A":"apple", "D":"David"}},
 		{`{"A":"apple" "D": "David"}`, map[string]string{"A":"apple", "D":"David"}},
+		{`{A:"apple" D: "David"}`, map[string]string{"A":"apple", "D":"David"}},
 		{`{"A":"apple" "M": {"D": "David"}}`, map[string]interface{}{
+			"A": "apple",
+			"M": map[string]interface{}{"D": "David"}}},
+		{`{"A":"apple" "M": {D: "David"}}`, map[string]interface{}{
 			"A": "apple",
 			"M": map[string]interface{}{"D": "David"}}},
 		{`{"A":"apple" "M": {"D": "David" "C": "Cat"}}`, map[string]interface{}{

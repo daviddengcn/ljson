@@ -185,6 +185,15 @@ func isSpace(c rune) bool {
 	return c == ' ' || c == '\t' || c == '\r' || c == '\n'
 }
 
+// isNakedKey checks whether r is a valid character of a naked-key
+func isNakedKey(r rune) bool {
+	if r <= ' ' || isSpace(r) {
+		return false
+	}
+	
+	return r != '"' && r != '\'' && r != ':' && r != '{' && r != '[' && r != '}' && r != ']' && r != ','
+}
+
 // stateBeginValueOrEmpty is the state after reading `[`.
 func stateBeginValueOrEmpty(s *scanner, c int) int {
 	if c <= ' ' && isSpace(rune(c)) {
@@ -264,6 +273,11 @@ func stateBeginString(s *scanner, c int) int {
 		s.step = stateInString
 		return scanBeginLiteral
 	}
+	
+	if isNakedKey(rune(c)) {
+		s.step = stateInNakedKeyString
+		return scanBeginLiteral
+	}
 	return s.error(c, "looking for beginning of object key string")
 }
 
@@ -303,6 +317,12 @@ func stateEndValue(s *scanner, c int) int {
 		if c == '"' {
 			s.parseState[n-1] = parseObjectKey
 			s.step = stateInString
+			return scanBeginLiteral
+		}
+		
+		if isNakedKey(rune(c)) {
+			s.parseState[n-1] = parseObjectKey
+			s.step = stateInNakedKeyString
 			return scanBeginLiteral
 		}
 		return s.error(c, "after object key:value pair")
@@ -347,6 +367,14 @@ func stateInString(s *scanner, c int) int {
 		return s.error(c, "in string literal")
 	}
 	return scanContinue
+}
+
+func stateInNakedKeyString(s *scanner, c int) int {
+	if isNakedKey(rune(c)) {
+		return scanContinue
+	}
+	
+	return stateEndValue(s, c)
 }
 
 // stateInStringEsc is the state after reading `"\` during a quoted string.

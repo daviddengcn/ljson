@@ -428,9 +428,15 @@ func (d *decodeState) object(v reflect.Value) {
 		start := d.off - 1
 		op = d.scanWhile(scanContinue)
 		item := d.data[start : d.off-1]
-		key, ok := unquote(item)
-		if !ok {
-			d.error(errPhase)
+		var key string
+		var ok bool
+		if item[0] == '"' {
+			key, ok = unquote(item)
+			if !ok {
+				d.error(errPhase)
+			}
+		} else {
+			key = string(item)
 		}
 
 		// Figure out field corresponding to key.
@@ -741,9 +747,15 @@ func (d *decodeState) objectInterface() map[string]interface{} {
 		start := d.off - 1
 		op = d.scanWhile(scanContinue)
 		item := d.data[start : d.off-1]
-		key, ok := unquote(item)
-		if !ok {
-			d.error(errPhase)
+		var key string
+		var ok bool
+		if item[0] == '"' {
+			key, ok = unquote(item)
+			if !ok {
+				d.error(errPhase)
+			}
+		} else {
+			key = string(item)
 		}
 
 		// Read : before value.
