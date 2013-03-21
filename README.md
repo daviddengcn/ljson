@@ -7,7 +7,7 @@ Loose JSON(LJSON) is a superset of JSON which allows some imperfect formatting(i
 
 Format differences to standard JSON:
 
-(A standard JSON data:
+A standard JSON data:
 
 ```javascript
 {
@@ -16,7 +16,7 @@ Format differences to standard JSON:
     "weight": 10
 }
 ```
-)
+
 
 1) Redundant commas are allowed in object and array definition. e.g.
 
@@ -41,7 +41,7 @@ Format differences to standard JSON:
 3) Support naked-key. If the key part of an element in an object, which is a string, 
 contains naked-key-valid characters only, the embracing double quotes can be omitted(the key becomes a naked-key).
 naked-key-valid characters are printable characters other than the following:
-`"`, `'`, `:`, `[`, `]`, `{`, `}`, `\`, and `,`.
+`"`, `'`, `:`, `[`, `]`, `{`, `}`, `\`, and `,`. (This is similar to grammar in javascript)
 
 ```javascript
 {
