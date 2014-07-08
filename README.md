@@ -1,4 +1,4 @@
-LJSON
+LJSON [![GoSearch](http://go-search.org/badge?id=github.com%2Fdaviddengcn%2Fljson)](http://go-search.org/view?id=github.com%2Fdaviddengcn%2Fljson)
 ========
 
 Loose JSON
