@@ -190,7 +190,7 @@ func isNakedKey(r rune) bool {
 	if r <= ' ' || isSpace(r) {
 		return false
 	}
-	
+
 	return r != '"' && r != '\'' && r != ':' && r != '{' && r != '[' && r != '}' && r != ']' && r != ',' && r != '\\'
 }
 
@@ -273,7 +273,7 @@ func stateBeginString(s *scanner, c int) int {
 		s.step = stateInString
 		return scanBeginLiteral
 	}
-	
+
 	if isNakedKey(rune(c)) {
 		s.step = stateInNakedKeyString
 		return scanBeginLiteral
@@ -319,7 +319,7 @@ func stateEndValue(s *scanner, c int) int {
 			s.step = stateInString
 			return scanBeginLiteral
 		}
-		
+
 		if isNakedKey(rune(c)) {
 			s.parseState[n-1] = parseObjectKey
 			s.step = stateInNakedKeyString
@@ -373,7 +373,7 @@ func stateInNakedKeyString(s *scanner, c int) int {
 	if isNakedKey(rune(c)) {
 		return scanContinue
 	}
-	
+
 	return stateEndValue(s, c)
 }
 

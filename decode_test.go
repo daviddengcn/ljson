@@ -611,15 +611,6 @@ func TestAnonymous(t *testing.T) {
 		N int
 	}
 
-	data, err := json.Marshal(new(S))
-	if err != nil {
-		t.Fatalf("Marshal: %v", err)
-	}
-	want := `{"N":0}`
-	if string(data) != want {
-		t.Fatalf("Marshal = %#q, want %#q", string(data), want)
-	}
-
 	var s S
 	if err := Unmarshal([]byte(`{"T": 1, "T": {"Y": 1}, "N": 2}`), &s); err != nil {
 		t.Fatalf("Unmarshal: %v", err)
@@ -706,13 +697,13 @@ func TestCheckUnmarshal(t *testing.T) {
 		{`[1, 2, 3]`, []int{1, 2, 3}},
 		{`[1, 2, 3,,]`, []int{1, 2, 3}},
 		{`[1, 2,,, 3]`, []int{1, 2, 3}},
-		{`{"D": "david"}`, map[string]string{"D":"david"}},
-		{`{,"D": "david",}`, map[string]string{"D":"david"}},
-		{`{D: "david"}`, map[string]string{"D":"david"}},
-		{`{"A":"apple","D": "David",}`, map[string]string{"A":"apple", "D":"David"}},
-		{`{A:"apple", D: "David",}`, map[string]string{"A":"apple", "D":"David"}},
-		{`{"A":"apple" "D": "David"}`, map[string]string{"A":"apple", "D":"David"}},
-		{`{A:"apple" D: "David"}`, map[string]string{"A":"apple", "D":"David"}},
+		{`{"D": "david"}`, map[string]string{"D": "david"}},
+		{`{,"D": "david",}`, map[string]string{"D": "david"}},
+		{`{D: "david"}`, map[string]string{"D": "david"}},
+		{`{"A":"apple","D": "David",}`, map[string]string{"A": "apple", "D": "David"}},
+		{`{A:"apple", D: "David",}`, map[string]string{"A": "apple", "D": "David"}},
+		{`{"A":"apple" "D": "David"}`, map[string]string{"A": "apple", "D": "David"}},
+		{`{A:"apple" D: "David"}`, map[string]string{"A": "apple", "D": "David"}},
 		{`{"A":"apple" "M": {"D": "David"}}`, map[string]interface{}{
 			"A": "apple",
 			"M": map[string]interface{}{"D": "David"}}},
@@ -734,7 +725,7 @@ func TestCheckUnmarshal(t *testing.T) {
 			t.Errorf("CheckUnmarshal(%d) %s: %v", i, c.json, err)
 			continue
 		}
-		
+
 		s := v.Elem().Interface()
 		if !reflect.DeepEqual(s, c.val) {
 			t.Errorf("CheckUnmarshal(%d) %s: expected %v(%v), but got %v(%v)",

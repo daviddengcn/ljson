@@ -113,7 +113,7 @@ func (d *decodeState) init(data []byte) *decodeState {
 
 // error aborts the decoding by panicking with err.
 func (d *decodeState) error(err error) {
-//buf := make([]byte, 1024); fmt.Println("error:", string(buf[:runtime.Stack(buf, false)]))
+	//buf := make([]byte, 1024); fmt.Println("error:", string(buf[:runtime.Stack(buf, false)]))
 	panic(err)
 }
 
@@ -821,7 +821,6 @@ func (d *decodeState) literalInterface() interface{} {
 		}
 		return n
 	}
-	panic("unreachable")
 }
 
 // getu4 decodes \uXXXX from the beginning of s, returning the hex value,
